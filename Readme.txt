@@ -1,3 +1,6 @@
+Tutorial from website:
+gobyexample.com
+
 Code with nano or vim editor:
 "c:\Program Files\Git\usr\bin\nano.exe" <filename>
 "c:\Program Files\Git\usr\bin\vim.exe" <filename>
