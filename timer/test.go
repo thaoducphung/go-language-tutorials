@@ -5,6 +5,7 @@ import (
     "gopkg.in/toast.v1"
 	"time"
 	"fmt"
+	"github.com/micmonay/keybd_event"
 )
 
 const VARIANT_TIME = 4
@@ -62,7 +63,7 @@ func main() {
 	
 	go bgTask(FARMING_TIME, FARMING_WAIT_TIME, "Farming" ,FRAMING_IMAGE)
 	
-	go bgTask(TRAINING_TIME, TRAINING_WAIT_TIME, "Training" ,TRAINING_IMAGE)
+	// go bgTask(TRAINING_TIME, TRAINING_WAIT_TIME, "Training" ,TRAINING_IMAGE)
 	
 	select {}
 }
