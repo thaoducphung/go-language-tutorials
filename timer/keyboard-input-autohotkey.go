@@ -7,10 +7,21 @@ import (
 	"time"
 	"fmt"
 	"github.com/micmonay/keybd_event"
+	"net"
+	"strings"
+	"log"
+	"os"
+	"bufio"
+)
+
+const (
+	connHost = "localhost"
+	connPort = "8999"
+	connType = "tcp"
 )
 
 const VARIANT_TIME = 1
-const HUNT_TIME int = 60 + VARIANT_TIME
+const HUNT_TIME int = 10 + VARIANT_TIME
 const HEALING_TIME int = 60 * 60 + VARIANT_TIME
 const TRAINING_TIME int = 60 * 15 + VARIANT_TIME
 const FARMING_TIME int = 60 * 10 + VARIANT_TIME
@@ -72,16 +83,65 @@ func main() {
 	
 	go bgTask(HUNT_TIME, HUNT_WAIT_TIME, "Hunt", keybd_event.VK_Q)
 	
-	go bgTask(CHOPPING_TIME, CHOPPING_WAIT_TIME, "Axe" , keybd_event.VK_W)
+	//go bgTask(CHOPPING_TIME, CHOPPING_WAIT_TIME, "Axe" , keybd_event.VK_W)
 	
 	// go bgTask(HEALING_TIME, HEALING_WAIT_TIME, "Heal" , keybd_event.VK_H)
 	
 	// go bgTask(FARMING_TIME, FARMING_WAIT_TIME, "Farming" , keybd_event.VK_F)
 	
-	go bgTask(ADVENTURE_TIME, ADVENTURE_WAIT_TIME, "Adventure" , keybd_event.VK_A)
+	//go bgTask(ADVENTURE_TIME, ADVENTURE_WAIT_TIME, "Adventure" , keybd_event.VK_A)
 	
-	go bgTask(TRAINING_TIME, TRAINING_WAIT_TIME, "Training" , keybd_event.VK_E)
+	//go bgTask(TRAINING_TIME, TRAINING_WAIT_TIME, "Training" , keybd_event.VK_E)
 	
+	go socketConnection()
 	select {}
 }
 
+func socketConnection() {
+	fmt.Println("Starting " + connType + " server on " + connHost + ":" + connPort)
+	
+	l, err := net.Listen(connType, connHost+":"+connPort)
+	if err != nil {
+		fmt.Print("Error listening:", err.Error())
+		os.Exit(1)
+	}
+	defer l.Close()
+	
+	for {
+		c, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error connecting:", err.Error())
+			return
+		}
+		fmt.Println("Client connected.")
+		
+		fmt.Println("Client " + c.RemoteAddr().String() + " connected.")
+		
+		go handleConnection(c)
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	buffer, err := bufio.NewReader(conn).ReadBytes('\n')
+	// buffer, err := bufio.NewReader(conn).ReadString('\n')
+	
+	if err != nil {
+		fmt.Println("Client left.")
+		conn.Close()
+		return
+	}
+	stringReceived := string(buffer[:len(buffer)-1])
+	// convert CRLF to LF
+	
+	checkBool := strings.TrimRight(stringReceived, "\r\n") == "quit"
+	log.Println("Client message:", stringReceived)
+
+	if checkBool {
+		os.Exit(1)
+	}
+	
+	conn.Write(buffer)
+	//conn.Write([]byte(buffer))
+	
+	handleConnection(conn)
+}
